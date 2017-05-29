@@ -189,7 +189,10 @@ class Converter:
             kind = item['field'].lower()
             if kind == 'assignee':
                 kind = 'owner'
-                value = self.user_email(item['newvalue'])
+                try:
+                    value = self.user_email(item['newvalue'])
+                except:
+                    value = None
             elif kind == 'summary':
                 kind = 'title'
             elif kind == 'attachment':
@@ -231,9 +234,21 @@ class Converter:
         return transactions
 
     def issue_convert(self, i):
-        reporter = self.user_email(i['reporter'])
+        
+        try:
+            reporter = self.user_email(i['reporter'])
+        except KeyError as e:
+            reporter = None
+        try:
+            assignee = self.user_email(i['assignee'])
+        except KeyError as e:
+            assignee = None
+        
         date = self.date_to_iso(i['created'])
         project = self.bytype['Project'][i['project']]['key']
+    
+        i['key'] =  project + "-" + i['number']
+
         ret = {
             'id': i['key'],
             'url': self.url(i),
@@ -241,7 +256,7 @@ class Converter:
             'creationDate': date,
             'creator': reporter,
             'description': self.markup_parse(i.get('description')),
-            'assignee': self.user_email(i['assignee']),
+            'assignee': assignee,
             'transactions': [
                 self.transaction_create(reporter, date, 'projects', { '=': [project] })
             ]
