@@ -37,7 +37,11 @@ class Converter:
             if 'id' in child.attrib:
                 self.bytype.setdefault(child.tag, {})[child.attrib['id']] = elementdict(child)
             else:
-                self.bytype.setdefault(child.tag, []).append(elementdict(child))
+                self.bytype.setdefault(child.tag, [])
+                if not isinstance(self.bytype[child.tag], list):
+                    print("Duplicate ID for tag : " + child.tag)
+                else:
+                    self.bytype[child.tag].append(elementdict(child))
 
     def convert(self):
         r = self.bytype
@@ -68,7 +72,9 @@ class Converter:
             p = r['Project'][i['project']]
             for a in i.get('attachments', {}).values():
                 unknown_thing = '10000'
-                a['data'] = '/'.join(('data/attachments', p['key'], unknown_thing, i['key'], a['id']))
+                issueKey = p['key'] + "-" + i['number']
+                i['key'] = issueKey
+                a['data'] = '/'.join(('data/attachments', p['key'], unknown_thing, issueKey, a['id']))
 
         # store users in a dict keyed by ApplicationUser.userKey
         users = { u['lowerUserName']: u for u in r['User'].values() }
