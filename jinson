@@ -10,11 +10,15 @@ Options:
   --version     Show version.
 """
 
+from __future__ import print_function
 from docopt import docopt
 from datetime import datetime
 import json
 import sys
 import xml.etree.ElementTree as ET
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 
 class Converter:
@@ -39,7 +43,7 @@ class Converter:
             else:
                 self.bytype.setdefault(child.tag, [])
                 if not isinstance(self.bytype[child.tag], list):
-                    print("Duplicate ID for tag : " + child.tag)
+                    eprint("Duplicate ID for tag : " + child.tag)
                 else:
                     self.bytype[child.tag].append(elementdict(child))
 
